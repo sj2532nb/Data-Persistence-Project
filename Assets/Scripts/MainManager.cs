@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,8 +12,11 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
+    public Text BestScoreText;
     public Text ScoreText;
     public GameObject GameOverText;
+    public GameObject MenuButton;
+    public GameObject ExitButton;
     
     private bool m_Started = false;
     private int m_Points;
@@ -22,6 +27,11 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (DataManager.Instance != null)
+        {
+            BestScoreText.text = $"Best Score : {DataManager.Instance.BestPlayerName} : {DataManager.Instance.BestScore}";
+        }
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -72,5 +82,27 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        MenuButton.SetActive(true);
+        ExitButton.SetActive(true);
+
+        // 현재 점수가 기존의 BestScore보다 크면 SaveBestScore에 현재 점수와 플레이어 이름을 저장함(BestScore 갱신)
+        if (m_Points > DataManager.Instance.BestScore)
+        {
+            DataManager.Instance.SaveBestScore(m_Points, DataManager.Instance.currentPlayerName);
+            DataManager.Instance.SaveDataToJson();
+        }
+    }
+    public void Menu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void Exit()
+    {
+#if UNITY_EDITOR
+        EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
     }
 }
